@@ -74,7 +74,9 @@ Checked against the official code (mimetic-a0 9f91b67 on stable-audio-tools 3241
   conditioning are bit-identical.
 - **The text encoder**: ComfyUI computes T5-base in fp32, the official code in fp16. The embeddings differ by 49–59 dB, and through
   50 guided steps that gives takes that are 32–89 dB from the official ones: the same music with small differences. The official
-  fp16 embedding is not stable itself: the same official recipe with transformers 5.20.1 instead of 4.57.6 is 56 dB away.
+  fp16 embedding is not stable itself: the same official recipe with transformers 5.20.1 instead of 4.57.6 is 56 dB away. The
+  official code cuts prompts at 128 T5 tokens; ComfyUI's T5-base does not, so a longer prompt is conditioned differently (the
+  prompts of the model's guide are far shorter).
 - **fp16 weights**: the official code also keeps the sampler's state in fp16, ComfyUI in fp32; the takes are 36 dB apart. The
   official fp16 and fp32 takes of one seed are 19 dB apart, so a seed gives a different take with fp16, as the model's README says.
 - **Precision**: the official sampler turns TF32 off. With PyTorch's default (TF32 for cuDNN convolutions) the latents were 61–64 dB

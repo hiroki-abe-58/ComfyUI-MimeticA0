@@ -78,7 +78,9 @@ and so are the cross-attention tokens and the global embedding the DiT gets (one
 - **The text encoder**: ComfyUI runs T5-base with fp32 compute; the official code runs it in fp16 (autocast). The official recipe
   itself, run with transformers 5.20.1 and torch 2.14.1, is 55.5–56.3 dB from the official embedding, so the official fp16
   embedding depends on the library versions. Through 50 guided steps the 49–59 dB embedding difference becomes 32–89 dB in the
-  audio (more with stronger guidance and longer takes).
+  audio (more with stronger guidance and longer takes). The official tokenizer call truncates at 128 tokens; ComfyUI's T5-base
+  tokenizer pads to at least 128 and does not truncate, so the two agree for prompts up to 128 tokens (all seven cases) and differ
+  beyond.
 - **fp16**: the official code halves the whole model and keeps the sampler's state in fp16; ComfyUI keeps the state in fp32 and
   computes in fp16. 36 dB to the official fp16 take; the official fp16 and fp32 takes of the same seed are 19.1 dB apart.
 - **TF32**: with PyTorch's default (cuDNN convolutions in TF32) one DiT forward was 68 dB from the official one and whole takes
@@ -98,6 +100,14 @@ and so are the cross-attention tokens and the global embedding the DiT gets (one
 
 The workflows load in ComfyUI's frontend (1.55.18) without missing nodes, and `graphToPrompt()` gives back the same graph
 (`scripts/export_gui_workflows.py`).
+
+## Clean install
+
+A fresh ComfyUI v0.42.1 checkout and virtual environment, `git clone` of this repository into `custom_nodes`, its (empty)
+requirements, `tools/download_model.py --weights all` from Hugging Face (8 files, all SHA-256 verified), then the GPU queue check
+against that installation (`--base-dir`): passed, the eight saved FLAC files byte-identical to the earlier run, the clone unchanged.
+The Registry package (`comfy node validate` and `comfy node pack`, comfy-cli 1.22.0, on `git archive` of the release commit) has
+only the package files (no tests, scripts or images) and none of the patterns the Registry's scan flags.
 
 ## Tests and CI
 
