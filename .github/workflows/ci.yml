@@ -1,0 +1,109 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# CPU only, with the real model (fp32 weights 2.0 GB + T5-base 0.9 GB, cached between runs). tools/download_model.py fetches the
+# files at their pinned revisions and checks the SHA-256. The tests run the nodes on the CPU with few steps, and a real ComfyUI
+# queue runs the shipped workflows (shortened) and compares the saved audio with the same nodes run in process. The comparison
+# with the official stable-audio-tools code is in docs/VERIFICATION.md (it pins torch 2.7.1, numpy<2 and transformers<5).
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        comfyui: ["v0.38.0"]
+        os: [ubuntu-24.04, windows-latest]
+        python: ["3.12"]
+        torch: ["2.14.1"]
+        torchvision: ["0.29.1"]
+        include:
+          - os: ubuntu-24.04
+            comfyui: "v0.38.0"
+            python: "3.10"
+            torch: "2.8.0"
+            torchvision: "0.23.0"
+          # the current ComfyUI release as well
+          - os: ubuntu-24.04
+            comfyui: "v0.42.1"
+            python: "3.12"
+            torch: "2.14.1"
+            torchvision: "0.29.1"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: ComfyUI-MimeticA0
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: ComfyUI checkout (pinned)
+        run: |
+          git -c core.autocrlf=false clone --quiet --depth 1 --branch "${{ matrix.comfyui }}" https://github.com/Comfy-Org/ComfyUI.git refs/ComfyUI
+          $pinned = @{ 'v0.38.0' = '6b747c0428c343e1417219641db93a4fb7cb69ae'; 'v0.42.1' = '63be2f9b82ad0dac88a7ceaa28a9cf3154125a18' }["${{ matrix.comfyui }}"]
+          if (-not $pinned -or (git -C refs/ComfyUI rev-parse HEAD) -ne $pinned) { throw "ComfyUI commit mismatch" }
+
+      - name: Install (CPU)
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true   # a failing pip must fail the step
+          python -m pip install --upgrade pip
+          # CPU torch first: on Linux ComfyUI's unpinned `torch` requirement would otherwise pull the CUDA build and its libraries
+          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} --index-url https://download.pytorch.org/whl/cpu
+          pip install -r refs/ComfyUI/requirements.txt -r ComfyUI-MimeticA0/requirements.txt pytest ruff soundfile
+          pip list
+
+      - name: Model files cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: models
+          key: models-${{ runner.os }}-${{ hashFiles('ComfyUI-MimeticA0/tools/model_files.sha256') }}
+
+      - name: Model files (pinned revisions, SHA-256 checked)
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          python ComfyUI-MimeticA0/tools/download_model.py --models-dir models
+
+      - name: Lint
+        run: ruff check --no-cache ComfyUI-MimeticA0
+
+      - name: No absolute local paths in the repository
+        run: |
+          $files = git -C ComfyUI-MimeticA0 ls-files | Where-Object { $_ -notmatch '\.(png|jpg|webp|gif)$' } | ForEach-Object { Join-Path ComfyUI-MimeticA0 $_ }
+          $hits = $files | Select-String -Pattern '[A-Za-z]:\\{1,2}[A-Za-z0-9_.-]+\\|/home/[a-z]+/|/Users/[A-Za-z]+/'
+          if ($hits) { $hits | ForEach-Object { "$($_.Path):$($_.LineNumber)" }; throw "absolute local path found" }
+
+      - name: Tests (references required, nothing may be skipped but the fp16 file, which CI does not download)
+        env:
+          MIMETIC_COMFYUI_DIR: ${{ github.workspace }}/refs/ComfyUI
+          MIMETIC_MODELS_DIR: ${{ github.workspace }}/models
+          MIMETIC_REQUIRE_REFERENCES: "1"
+        run: |
+          Set-Location ComfyUI-MimeticA0
+          python -m pytest tests -q -rs -p no:cacheprovider -W ignore::DeprecationWarning -W ignore::FutureWarning --durations=5
+
+      - name: Real ComfyUI queue on CPU (real model, shortened jobs)
+        run: |
+          python ComfyUI-MimeticA0/scripts/ci_queue_check.py --comfyui refs/ComfyUI --models-dir models --workdir queue-logs
+
+      - name: ComfyUI log on failure
+        if: failure()
+        run: |
+          if (Test-Path queue-logs/comfyui.log) { Get-Content queue-logs/comfyui.log -Tail 120 }

@@ -1,0 +1,11 @@
+# SHA-256 of the model files (paths below ComfyUI's models folder)
+# mimetic_a0/: micknoisemachine/mimetic-a0 at revision 5f21e1807517cda2e6d72051cdb81dafc3931077
+# text_encoders/t5_base.safetensors: model.safetensors of google-t5/t5-base at revision a9723ea7f1b39c1eae772870f3b547bf6ef7e6c1
+b3fff44d4716fa10ca05cf9da0afbc66cf753c1488cbb2b11fade2d77a34abaa  mimetic_a0/mimetic-a0/LICENSE
+f1b73b6594f396bdc9dae5af3fbd85d3976cd0547dbd142db9a0a60998d3ba56  mimetic_a0/mimetic-a0/NOTICE
+4cbe4d24176ae751878ab8a012ec668be2e249dc0bd0f067132652e8eb1e4b69  mimetic_a0/mimetic-a0/PROMPTING.md
+05e3ffb817536187cb1fac62b53ccb948b0ecf5d9c5f6915d60196ca3c0e4af6  mimetic_a0/mimetic-a0/README.md
+e3e255e27a45d41327156b1b2d4d88b7c2a3029550206b669695650391dd8491  mimetic_a0/mimetic-a0/model.fp16.safetensors
+b69657b108017718f94a7072c9125966e1de53b63128a4490ae7c07ad9a22f01  mimetic_a0/mimetic-a0/model.safetensors
+6f7da1c3ae1a5ccf77fdfa714befc5d800137e9cf736335c38a007bb3cfc1709  mimetic_a0/mimetic-a0/model_config.json
+a90903540cc02cbeb7ff9f823f1a80eb778c7e22426a0e620b01c77a5ec8f5b4  text_encoders/t5_base.safetensors

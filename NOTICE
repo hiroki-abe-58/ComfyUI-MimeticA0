@@ -1,0 +1,23 @@
+mimetic-a0 for ComfyUI
+Copyright (c) 2026 hiroki-abe-58. The code of this node pack is licensed under the MIT License (LICENSE).
+
+This node pack is an unofficial integration. It is not affiliated with or endorsed by Mick Grierson (the author of mimetic-a0),
+Stability AI or Comfy Org.
+
+Code it follows (not included)
+------------------------------
+The pack runs the model on ComfyUI's own stable-audio classes. Its sampler reproduces what the official tools do at inference:
+mimetic-a0 (https://github.com/micknoise/mimetic-a0, commit 9f91b67, MIT, Copyright (c) 2026 Mick Grierson) on
+stable-audio-tools (https://github.com/Stability-AI/stable-audio-tools, commit 3241adb, MIT, Copyright (c) 2023 Stability AI):
+the length with 6 s of headroom, the starting noise, the log-SNR-spaced rectified-flow schedule, and classifier-free guidance
+with adaptive projected guidance. No file of either project is copied into this repository.
+
+Models (not included)
+---------------------
+No model weights are included or downloaded by the nodes. tools/download_model.py fetches, when you run it:
+- micknoisemachine/mimetic-a0 (MIT): model_config.json, model.safetensors and/or model.fp16.safetensors, LICENSE, NOTICE,
+  README.md, PROMPTING.md. According to its NOTICE and model card, the autoencoder is the ACE-Step 1.5 VAE (MIT), and the
+  training data were Freesound clips released as CC0 and synthetic music from the author's procedural generators, partly
+  rendered with the GeneralUser GS SoundFont (S. Christian Collins), whose author notes that the origin of some of its samples is
+  uncertain.
+- google-t5/t5-base (Apache License 2.0): model.safetensors, saved as text_encoders/t5_base.safetensors.

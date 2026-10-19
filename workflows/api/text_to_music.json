@@ -1,0 +1,10 @@
+{
+  "1": {"class_type": "MimeticA0Loader", "inputs": {"model": "mimetic-a0", "weights": "fp32"}},
+  "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "t5_base.safetensors", "type": "stable_audio"}},
+  "3": {"class_type": "MimeticA0Prompt", "inputs": {"prompt": "boom bap drum loop, standard kit, swung, with ghost notes", "bpm": 90.0, "bars": "4", "seconds": 8.0}},
+  "4": {"class_type": "CLIPTextEncode", "inputs": {"text": ["3", 0], "clip": ["2", 0]}},
+  "5": {"class_type": "MimeticA0Sampler", "inputs": {"model": ["1", 0], "positive": ["4", 0], "seconds": ["3", 1], "batch_size": 1, "seed": 1, "steps": 50, "cfg": 6.0, "apg_scale": 1.0, "noise": "official"}},
+  "6": {"class_type": "MimeticA0Decode", "inputs": {"samples": ["5", 0], "vae": ["1", 1], "normalize": true}},
+  "7": {"class_type": "SaveAudioAdvanced", "inputs": {"audio": ["6", 0], "filename_prefix": "mimetic_a0/loop", "format": "flac"}},
+  "8": {"class_type": "PreviewAny", "inputs": {"source": ["3", 0]}}
+}

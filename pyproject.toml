@@ -1,0 +1,25 @@
+[project]
+name = "mimetic-a0-music"
+description = "mimetic-a0 for ComfyUI: text to music trained only on CC0 and synthetic audio (MIT). Drum loops, basslines, chords, melodies and one-shots at the tempo, key and chords you ask for; 48 kHz stereo, up to 16 s. Runs on ComfyUI's own stable-audio classes with the official sampler: no extra Python packages."
+version = "0.1.0"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/hiroki-abe-58/ComfyUI-MimeticA0"
+
+[tool.comfy]
+PublisherId = "hiroki-abe-58"
+DisplayName = "mimetic-a0 Text to Music for ComfyUI"
+Icon = ""
+
+[tool.ruff]
+line-length = 180
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,1 @@
+# No packages beyond ComfyUI's own requirements: the model runs on ComfyUI's stable-audio classes.

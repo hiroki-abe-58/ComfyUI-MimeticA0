@@ -1,0 +1,8 @@
+{
+  "1": {"class_type": "MimeticA0Loader", "inputs": {"model": "mimetic-a0", "weights": "fp16"}},
+  "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "t5_base.safetensors", "type": "stable_audio"}},
+  "3": {"class_type": "CLIPTextEncode", "inputs": {"text": "single cello note, G3", "clip": ["2", 0]}},
+  "4": {"class_type": "MimeticA0Sampler", "inputs": {"model": ["1", 0], "positive": ["3", 0], "seconds": 3.0, "batch_size": 4, "seed": 1, "steps": 50, "cfg": 6.0, "apg_scale": 1.0, "noise": "official"}},
+  "5": {"class_type": "MimeticA0Decode", "inputs": {"samples": ["4", 0], "vae": ["1", 1], "normalize": true}},
+  "6": {"class_type": "SaveAudioAdvanced", "inputs": {"audio": ["5", 0], "filename_prefix": "mimetic_a0/takes", "format": "flac"}}
+}
